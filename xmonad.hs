@@ -10,6 +10,8 @@ import XMonad.Hooks.SetWMName
 import XMonad.Hooks.FadeInactive
 import XMonad.Layout.Fullscreen
 import XMonad.Hooks.FadeWindows
+import XMonad.Util.EZConfig
+import XMonad.Hooks.ManageHelpers
 
 
 startup :: X ()
@@ -33,22 +35,30 @@ myLogHook :: X ()
 myLogHook = fadeWindowsLogHook $ composeAll [isUnfocused --> transparency 0.15
                                             , (appName =? "chromium") --> opaque
                                             , (className =? "Gimp-2.10") --> opaque
+                                            , (className =? "Gimp") --> opaque
+                                            , (appName =? "emacs") --> transparency 0.05
                                             ]
          
 myWorkspaces :: [String]
 myWorkspaces = show <$> [1..9]
-
-gap :: Int
-gap = 0
-
-fi :: Integer -> Integer
-fi = fromIntegral
 
 myLayout = avoidStruts $ spacingRaw True (Border 6 6 6 6) True (Border 6 6 6 6) True $
   Tall 1 (3/100) (1/2)
   ||| Grid
   ||| fullscreenFull Full
 
+myKeymap :: [(String, X ())]
+myKeymap = [("M-r", spawn "rofi -show run")
+           , ("M-S-r", spawn "rofi -show drun")
+           , ("M-C-S-l", spawn "dm-tool lock")]
+
+myManageHook :: ManageHook
+myManageHook = composeAll [manageDocks
+               , fullscreenManageHook
+               , appName =? "chromium" --> doShift "1"
+               , appName =? "emacs" --> doShift "2"
+               , className =? "TelegramDesktop" --> doShift "4"
+               ]
 main :: IO ()
 main =
   xmonad . ewmh . docks . fullscreenSupport $ def
@@ -59,5 +69,6 @@ main =
     , borderWidth = 0
     , layoutHook = myLayout
     , logHook = myLogHook
-    , manageHook = manageDocks <> fullscreenManageHook
+    , manageHook = myManageHook
     }
+    `additionalKeysP` myKeymap
