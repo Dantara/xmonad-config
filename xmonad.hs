@@ -14,13 +14,13 @@ import XMonad.Hooks.FadeWindows
 
 startup :: X ()
 startup = do
-    spawn "killall polybar feh compton plank"
+    spawn "killall polybar feh plank picom"
 
     -- composite manager
-    spawn "sleep 0.1 && compton -CG"
+    spawn "sleep 0.1 && picom -CG"
 
     -- image wallpaper
-    spawn "sleep 0.1 && feh --bg-scale ~/Images/Wallpapers/neon1.jpg"
+    spawn "sleep 0.1 && feh --bg-scale ~/Images/Wallpapers/mountain-cropped.jpg"
 
     -- bar
     spawn "sleep 0.3 && polybar xmonad"
@@ -30,7 +30,10 @@ startup = do
     setWMName "LG3D"
 
 myLogHook :: X ()
-myLogHook = fadeWindowsLogHook $ composeAll [isUnfocused --> transparency 0.15]
+myLogHook = fadeWindowsLogHook $ composeAll [isUnfocused --> transparency 0.15
+                                            , (appName =? "chromium") --> opaque
+                                            , (className =? "Gimp-2.10") --> opaque
+                                            ]
          
 myWorkspaces :: [String]
 myWorkspaces = show <$> [1..9]
