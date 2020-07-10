@@ -13,42 +13,40 @@ import           XMonad.Hooks.SetWMName
 import           XMonad.Layout
 import           XMonad.Layout.BorderResize
 import           XMonad.Layout.Fullscreen
-import           XMonad.Layout.Gaps
 import           XMonad.Layout.Grid
-import           XMonad.Layout.SimplestFloat
 import           XMonad.Layout.Spacing
 import           XMonad.Layout.WindowArranger
 
+import qualified XMonad.StackSet              as W
 import           XMonad.Util.EZConfig
 
 
 startup :: X ()
 startup = do
-    spawn "killall polybar feh plank picom"
+    spawn "killall polybar feh plank picom conky"
 
     -- composite manager
-    spawn "sleep 0.1 && picom -CG"
+    spawn "sleep 0.1 && picom"
 
     -- image wallpaper
     spawn "sleep 0.1 && feh --bg-scale ~/Images/Wallpapers/mountain-cropped.jpg"
 
     -- bar
-    spawn "sleep 0.3 && polybar xmonad"
+    spawn "sleep 0.1 && polybar xmonad"
     spawn "sleep 0.1 && plank"
 
+    spawn "sleep 0.1 && conky"
     -- set WM name
     setWMName "LG3D"
 
 myLogHook :: X ()
-myLogHook = fadeWindowsLogHook $ composeAll [isUnfocused --> transparency 0.2
-                                            , (appName =? "chromium") --> opaque
-                                            , (className =? "Gimp-2.10") --> opaque
-                                            , (className =? "Gimp") --> opaque
+myLogHook = fadeWindowsLogHook $ composeAll [opaque
+                                            , isUnfocused --> transparency 0.2
                                             , (appName =? "emacs") --> transparency 0.05
                                             ]
 
 myWorkspaces :: [String]
-myWorkspaces = show <$> [1..9]
+myWorkspaces = show <$> [1..9] <> [0]
 
 myLayout = borderResize $ windowArrange $ avoidStruts $
   spacingRaw True (Border 6 6 6 6) True (Border 6 6 6 6) True $
@@ -60,14 +58,17 @@ myKeymap :: [(String, X ())]
 myKeymap = [("M-r", spawn "rofi -show run")
            , ("M-o", spawn "rofi -show drun")
            , ("M-w", spawn "rofi -show window")
+           , ("M-\\", spawn "rofi-hoogle")
            , ("M-C-S-l", spawn "dm-tool lock")
            , ("M-<L>", prevWS)
            , ("M-<R>", nextWS)
            , ("M-S-<L>", shiftToPrev)
            , ("M-S-<R>", shiftToNext)
+           , ("M-`", toggleWS)
            , ("M-C-h", sendMessage Shrink)
            , ("M-C-l", sendMessage Expand)
            , ("M-b", sendMessage ToggleStruts)
+           , ("M-0", windows $ W.greedyView "0")
            ]
 
 myFnKeys =
