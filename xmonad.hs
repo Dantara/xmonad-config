@@ -1,17 +1,25 @@
 import           XMonad
-import           XMonad.Config.Desktop
+
+import           XMonad.Actions.CycleWS
+import           XMonad.Actions.Navigation2D
+
 import           XMonad.Hooks.EwmhDesktops
+import           XMonad.Hooks.FadeInactive
+import           XMonad.Hooks.FadeWindows
 import           XMonad.Hooks.ManageDocks
+import           XMonad.Hooks.ManageHelpers
+import           XMonad.Hooks.SetWMName
+
 import           XMonad.Layout
+import           XMonad.Layout.BorderResize
+import           XMonad.Layout.Fullscreen
 import           XMonad.Layout.Gaps
+import           XMonad.Layout.Grid
+import           XMonad.Layout.SimplestFloat
 import           XMonad.Layout.Spacing
-import XMonad.Layout.Grid
-import XMonad.Hooks.SetWMName
-import XMonad.Hooks.FadeInactive
-import XMonad.Layout.Fullscreen
-import XMonad.Hooks.FadeWindows
-import XMonad.Util.EZConfig
-import XMonad.Hooks.ManageHelpers
+import           XMonad.Layout.WindowArranger
+
+import           XMonad.Util.EZConfig
 
 
 startup :: X ()
@@ -27,30 +35,50 @@ startup = do
     -- bar
     spawn "sleep 0.3 && polybar xmonad"
     spawn "sleep 0.1 && plank"
- 
+
     -- set WM name
     setWMName "LG3D"
 
 myLogHook :: X ()
-myLogHook = fadeWindowsLogHook $ composeAll [isUnfocused --> transparency 0.15
+myLogHook = fadeWindowsLogHook $ composeAll [isUnfocused --> transparency 0.2
                                             , (appName =? "chromium") --> opaque
                                             , (className =? "Gimp-2.10") --> opaque
                                             , (className =? "Gimp") --> opaque
                                             , (appName =? "emacs") --> transparency 0.05
                                             ]
-         
+
 myWorkspaces :: [String]
 myWorkspaces = show <$> [1..9]
 
-myLayout = avoidStruts $ spacingRaw True (Border 6 6 6 6) True (Border 6 6 6 6) True $
+myLayout = borderResize $ windowArrange $ avoidStruts $
+  spacingRaw True (Border 6 6 6 6) True (Border 6 6 6 6) True $
   Tall 1 (3/100) (1/2)
   ||| Grid
-  ||| fullscreenFull Full
+  ||| Full
 
 myKeymap :: [(String, X ())]
 myKeymap = [("M-r", spawn "rofi -show run")
-           , ("M-S-r", spawn "rofi -show drun")
-           , ("M-C-S-l", spawn "dm-tool lock")]
+           , ("M-o", spawn "rofi -show drun")
+           , ("M-w", spawn "rofi -show window")
+           , ("M-C-S-l", spawn "dm-tool lock")
+           , ("M-<L>", prevWS)
+           , ("M-<R>", nextWS)
+           , ("M-S-<L>", shiftToPrev)
+           , ("M-S-<R>", shiftToNext)
+           , ("M-C-h", sendMessage Shrink)
+           , ("M-C-l", sendMessage Expand)
+           , ("M-b", sendMessage ToggleStruts)
+           ]
+
+myFnKeys =
+  -- backlight
+  [ ("<XF86MonBrightnessUp>"   , spawn "xbacklight -inc 10")
+  , ("<XF86MonBrightnessDown>" , spawn "xbacklight -dec 10")
+  -- volume
+  , ("<XF86AudioRaiseVolume>"  , spawn "pactl set-sink-volume 0 +5%")
+  , ("<XF86AudioLowerVolume>"  , spawn "pactl set-sink-volume 0 -5%")
+  , ("<XF86AudioMute>"         , spawn "pactl set-sink-mute 0 toggle")
+  ]
 
 myManageHook :: ManageHook
 myManageHook = composeAll [manageDocks
@@ -61,7 +89,7 @@ myManageHook = composeAll [manageDocks
                ]
 main :: IO ()
 main =
-  xmonad . ewmh . docks . fullscreenSupport $ def
+  xmonad . ewmh . docks . navigation . fullscreenSupport $ def
     { terminal    = "urxvt"
     , modMask     = mod4Mask
     , startupHook = startup
@@ -71,4 +99,6 @@ main =
     , logHook = myLogHook
     , manageHook = myManageHook
     }
-    `additionalKeysP` myKeymap
+    `additionalKeysP` (myKeymap <> myFnKeys)
+  where
+    navigation = navigation2DP def ("k", "h", "j", "l") [("M-", windowGo), ("M-S-", windowSwap)] False
