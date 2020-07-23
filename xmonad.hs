@@ -23,7 +23,7 @@ import           XMonad.Util.EZConfig
 
 startup :: X ()
 startup = do
-    spawn "killall polybar feh plank picom conky"
+    spawn "killall polybar feh plank picom conky libinput-gestures"
 
     -- composite manager
     spawn "sleep 0.1 && picom"
@@ -36,6 +36,8 @@ startup = do
     spawn "sleep 0.1 && plank"
 
     spawn "sleep 0.1 && conky"
+
+    spawn "sleep 0.1 && libinput-gestures"
     -- set WM name
     setWMName "LG3D"
 
@@ -69,6 +71,7 @@ myKeymap = [("M-r", spawn "rofi -show run")
            , ("M-C-l", sendMessage Expand)
            , ("M-b", sendMessage ToggleStruts)
            , ("M-0", windows $ W.greedyView "0")
+           , ("<Print>", spawn "scrot ~/Images/Screenshots/%Y-%m-%d-%T-screenshot.png")
            ]
 
 myFnKeys =
