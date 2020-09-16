@@ -29,7 +29,7 @@ startup = do
     spawn "sleep 0.1 && picom"
 
     -- image wallpaper
-    spawn "sleep 0.1 && feh --bg-scale ~/Images/Wallpapers/mountain-cropped.jpg"
+    spawn "sleep 0.1 && feh --bg-scale ~/Images/Wallpapers/paints_solarized_70.jpg"
 
     -- bar
     spawn "sleep 0.1 && polybar xmonad"
@@ -43,7 +43,7 @@ startup = do
 
 myLogHook :: X ()
 myLogHook = fadeWindowsLogHook $ composeAll [opaque
-                                            , isUnfocused --> transparency 0.2
+                                            , isUnfocused --> transparency 0.15
                                             , (appName =? "emacs") --> transparency 0.05
                                             ]
 
@@ -72,6 +72,7 @@ myKeymap = [("M-r", spawn "rofi -show run")
            , ("M-b", sendMessage ToggleStruts)
            , ("M-0", windows $ W.greedyView "0")
            , ("<Print>", spawn "scrot ~/Images/Screenshots/%Y-%m-%d-%T-screenshot.png")
+           , ("M-<Print>", spawn "scrot ~/Images/Screenshots/%Y-%m-%d-%T-screenshot.png")
            ]
 
 myFnKeys =
