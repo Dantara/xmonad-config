@@ -17,7 +17,8 @@ import           XMonad.Layout.Grid
 import           XMonad.Layout.Spacing
 import           XMonad.Layout.WindowArranger
 
-import qualified XMonad.StackSet              as W
+import           XMonad.Actions.PhysicalScreens
+import qualified XMonad.StackSet                as W
 import           XMonad.Util.EZConfig
 
 
@@ -43,7 +44,7 @@ startup = do
 
 myLogHook :: X ()
 myLogHook = fadeWindowsLogHook $ composeAll [opaque
-                                            , isUnfocused --> transparency 0.15
+                                            , isUnfocused --> transparency 0.125
                                             , (appName =? "emacs") --> transparency 0.05
                                             ]
 
@@ -70,10 +71,16 @@ myKeymap = [("M-r", spawn "rofi -show run")
            , ("M-C-h", sendMessage Shrink)
            , ("M-C-l", sendMessage Expand)
            , ("M-b", sendMessage ToggleStruts)
-           , ("M-0", windows $ W.greedyView "0")
            , ("<Print>", spawn "scrot ~/Images/Screenshots/%Y-%m-%d-%T-screenshot.png")
            , ("M-<Print>", spawn "scrot ~/Images/Screenshots/%Y-%m-%d-%T-screenshot.png")
-           ]
+           ] <>
+           [("M-" <> mask <> key, f n)
+           | (key, n) <- zip ["a", "q"] [1, 0]
+           , (mask, f) <- [("", viewScreen def), ("S-", sendToScreen def)]
+           ] <>
+           [ ("M-" <> mask <> key, f tag)
+           | (tag, key) <- zip myWorkspaces (show <$> [1..9] <> [0])
+           , (mask, f) <- [("", windows . W.view), ("S-", windows . W.shift)]]
 
 myFnKeys =
   -- backlight
